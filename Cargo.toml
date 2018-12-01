@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Dave Aitken <dave.aitken@gmail.com>"]
 
 [dependencies]
+reqwest = "0.9.5"
+# http = "0.1"
+# hyper = "0.12"
