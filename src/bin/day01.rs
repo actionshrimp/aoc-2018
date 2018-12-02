@@ -1,4 +1,5 @@
 use std::ops::Neg;
+use std::collections::HashSet;
 
 fn part1(data : &str) -> i32 {
     data.lines().fold(0, |acc, line| {
@@ -25,10 +26,30 @@ fn parse_line(s : &str) -> i32 {
     }
 }
 
+fn part2(data : &str) -> i32 {
+
+    let mut acc = 0;
+    let mut seen : HashSet<i32> = HashSet::new();
+    seen.insert(acc);
+
+    let mut lines = data.lines().map(parse_line).cycle();
+
+    loop {
+        acc += lines.next().expect("no lines left!");
+
+        if seen.contains(&acc) {
+            break acc
+        }
+
+        seen.insert(acc);
+    }
+}
+
 fn main() {
     let fname = "data/01.txt";
     let fdata = std::fs::read_to_string(fname)
         .expect(&format!("couldn't read {}", fname));
 
     println!("result p1: {}", part1(&fdata));
+    println!("result p2: {}", part2(&fdata));
 }
