@@ -26,19 +26,21 @@ fn parse_line(s : &str) -> i32 {
     }
 }
 
-fn part2(data : &str) -> i32 {
+fn part2(data : &str) -> (i32, i32) {
 
     let mut acc = 0;
+    let mut i = 0;
     let mut seen : HashSet<i32> = HashSet::new();
     seen.insert(acc);
 
     let mut lines = data.lines().map(parse_line).cycle();
 
     loop {
+        i += 1;
         acc += lines.next().expect("no lines left!");
 
         if seen.contains(&acc) {
-            break acc
+            break (acc, i)
         }
 
         seen.insert(acc);
@@ -51,5 +53,6 @@ fn main() {
         .expect(&format!("couldn't read {}", fname));
 
     println!("result p1: {}", part1(&fdata));
-    println!("result p2: {}", part2(&fdata));
+    let (r, i) = part2(&fdata);
+    println!("result p2: {} (after {} lines)", r, i);
 }
