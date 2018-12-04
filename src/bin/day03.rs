@@ -30,16 +30,31 @@ fn parse_line(re: &Regex, s: &str) -> Claim {
 
 fn to_coords(c: &Claim) -> Vec<(i32, i32)> {
     let mut res = Vec::new();
-    [c.pos.0..(c.pos.0 + c.size.0)].iter().for_each(|x|{
-        [c.pos.1..(c.pos.1 + c.size.1)].iter().for_each(|y| {
+    for x in c.pos.0 .. (c.pos.0 + c.size.0) {
+        for y in c.pos.1 .. (c.pos.1 + c.size.1) {
             res.push((x, y));
-        });
-    });
+        }
+    }
     res
 }
 
-fn part1(s: &Vec<&Claim>) -> i32 {
+fn part1(claims: &Vec<Claim>) -> i32 {
     let mut fabric : HashMap<(i32, i32), i32> = HashMap::new();
+    for claim in claims {
+        let mut coords = to_coords(claim);
+        for coord in coords {
+            let count = fabric.entry(coord).or_insert(0);
+            *count += 1;
+        }
+    }
+
+    fabric.values().fold(0, |acc, v| {
+        if *v > 1 {
+            acc + 1
+        } else {
+            acc
+        }
+    })
 
 }
 
@@ -49,7 +64,7 @@ fn main() {
     let fdata = std::fs::read_to_string(fname)
         .expect(&format!("couldn't read {}", fname));
 
-    let mut claims = fdata.lines().map(|l| &parse_line(&re, l)).collect();
+    let claims = fdata.lines().map(|l| parse_line(&re, l)).collect();
 
     println!("result p1: {}", part1(&claims));
 }
