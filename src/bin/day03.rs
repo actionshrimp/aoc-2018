@@ -41,35 +41,17 @@ fn to_coords(c: &Claim) -> Vec<(i32, i32)> {
     res
 }
 
-fn part1(claims: &Vec<Claim>) -> i32 {
-    let mut fabric : HashMap<(i32, i32), i32> = HashMap::new();
-    for claim in claims {
-        let mut coords = to_coords(claim);
-        for coord in coords {
-            let count = fabric.entry(coord).or_insert(0);
-            *count += 1;
-        }
-    }
-
+fn part1(fabric: &HashMap<(i32, i32), Vec<i32>>) -> i32 {
     fabric.values().fold(0, |acc, v| {
-        if *v > 1 {
+        if v.len() > 1 {
             acc + 1
         } else {
             acc
         }
     })
-
 }
 
-fn part2(claims: &Vec<Claim>) -> i32 {
-    let mut fabric : HashMap<(i32, i32), Vec<i32>> = HashMap::new();
-    for claim in claims {
-        let mut coords = to_coords(claim);
-        for coord in coords {
-            let sq_claims = fabric.entry(coord).or_insert(Vec::new());
-            sq_claims.push(claim.id)
-        }
-    }
+fn part2(fabric: &HashMap<(i32, i32), Vec<i32>>, claims: &Vec<Claim>) -> i32 {
 
     let mut overlapping_ids : HashSet<i32> = HashSet::new();
     for square_ids in fabric.values() {
@@ -94,6 +76,18 @@ fn part2(claims: &Vec<Claim>) -> i32 {
     }
 }
 
+fn scan(claims: &Vec<Claim>) -> HashMap<(i32, i32), Vec<i32>> {
+    let mut fabric : HashMap<(i32, i32), Vec<i32>> = HashMap::new();
+    for claim in claims {
+        let mut coords = to_coords(claim);
+        for coord in coords {
+            let sq_claims = fabric.entry(coord).or_insert(Vec::new());
+            sq_claims.push(claim.id)
+        }
+    }
+    fabric
+}
+
 fn main() {
     let re: Regex = Regex::new(r"^#(?P<id>\d+) @ (?P<posx>\d+),(?P<posy>\d+): (?P<sizex>\d+)x(?P<sizey>\d+)$").expect("error compiling regex");
     let fname = "data/03.txt";
@@ -101,7 +95,8 @@ fn main() {
         .expect(&format!("couldn't read {}", fname));
 
     let claims = fdata.lines().map(|l| parse_line(&re, l)).collect();
+    let fabric = scan(&claims);
 
-    println!("result p1: {}", part1(&claims));
-    println!("result p2: {}", part2(&claims));
+    println!("result p1: {}", part1(&fabric));
+    println!("result p2: {}", part2(&fabric, &claims));
 }
