@@ -6,3 +6,4 @@ authors = ["Dave Aitken <dave.aitken@gmail.com>"]
 [dependencies]
 reqwest = "0.9.5"
 regex = "1.1.0"
+combine = "3.6.3"
