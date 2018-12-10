@@ -38,20 +38,26 @@ fn parse_line(line: &str) -> (i32, EventEntry) {
         .skip(char(' '))
         .and(event);
 
-    println!("{}", line);
     let (result, _rest) = parser.parse(line)
         .expect(&format!("parse failed: {}", &line));
 
     result
 }
 
-fn most_asleep(es: impl Iterator<Item = (i32, EventEntry)>) -> (i32, i32)
-{
+struct GuardSleep {
+    id: i32,
+    start_min: i32,
+    end_min: i32
+}
+
+fn part1(es: &Vec<(i32, EventEntry)>) -> (i32, i32) {
 
     let mut minutes_asleep = HashMap::new();
     let mut current_guard = None;
     let mut start_min = None;
     let mut max_guard = None;
+
+    let mut sleeps : Vec<GuardSleep> = Vec::new();
 
     for (min, ev) in es {
         match ev {
@@ -67,6 +73,9 @@ fn most_asleep(es: impl Iterator<Item = (i32, EventEntry)>) -> (i32, i32)
                     .entry(current_id).or_insert(0);
 
                 *total_mins += min - start_min.expect("No start min");
+                sleeps.push(GuardSleep { id: *current_id,
+                                         start_min: *start_min.expect("No start min"),
+                                         end_min: *min });
 
                 match max_guard {
                     | None => { max_guard = Some((current_id, *total_mins)) }
@@ -81,8 +90,11 @@ fn most_asleep(es: impl Iterator<Item = (i32, EventEntry)>) -> (i32, i32)
         }
     }
 
-    let (id, mins) = max_guard.expect("No max guard");
-    (id.clone(), mins.clone())
+    let (sleepiest_guard_id, mins) = max_guard.expect("No max guard");
+    let all_zeros = (vec![0]).iter().cycle().take(60);
+    let sleep_freqs = sleeps.iter().fold(all_zeros, |acc, sleep| {
+
+    });
 }
 
 fn main() {
@@ -93,11 +105,9 @@ fn main() {
     let mut lines : Vec<_> = fdata.lines().collect();
     lines.sort();
 
-    let iter = lines.iter().map(|line| parse_line(&line));
-    let (id, mins) = most_asleep(iter);
+    let parsed_lines : Vec<_> =
+        lines.iter().map(|line| parse_line(&line)).collect();
 
-    println!("most asleep: {} {}", id, mins);
-
-    // println!("result p1: {}", part1(&fabric));
+    println!("result p1: {}", part1(&parsed_lines));
     // println!("result p2: {}", part2(&fabric, &claims));
 }
