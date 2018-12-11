@@ -50,7 +50,7 @@ struct GuardSleep {
     end_min: i32
 }
 
-fn part1(es: &Vec<(i32, EventEntry)>) -> i32 {
+fn part1(es: &Vec<(i32, EventEntry)>) -> (Vec<GuardSleep>, i32) {
 
     let mut minutes_asleep = HashMap::new();
     let mut current_guard = None;
@@ -93,7 +93,7 @@ fn part1(es: &Vec<(i32, EventEntry)>) -> i32 {
     let (sleepiest_guard_id, _mins) = max_guard.expect("No max guard");
     let mut freqs : [i32; 60] = [0; 60];
 
-    for s in sleeps {
+    for s in &sleeps {
         if s.guard_id == *sleepiest_guard_id {
             for i in s.start_min..s.end_min {
                 freqs[i as usize] += 1;
@@ -110,8 +110,30 @@ fn part1(es: &Vec<(i32, EventEntry)>) -> i32 {
         }
     }
 
-    (*sleepiest_guard_id * (max_min as i32))
+    (sleeps, (*sleepiest_guard_id * (max_min as i32)))
 }
+
+fn part2(sleeps: &Vec<GuardSleep>) -> i32 {
+    let mut mins_by_guard = HashMap::new();
+
+    let mut max_guard = 0;
+    let mut max_min = 0;
+
+    for s in sleeps {
+        let mut guard_mins = mins_by_guard.entry(s.guard_id).or_insert([0; 60]);
+        for i in s.start_min..s.end_min {
+            let ui = i as usize;
+            guard_mins[ui] += 1;
+            if guard_mins[ui] > max_min {
+                max_guard = s.guard_id;
+                max_min = i;
+            }
+        }
+    }
+
+    max_guard * max_min
+}
+
 
 fn main() {
     let fname = "data/04.txt";
@@ -124,6 +146,8 @@ fn main() {
     let parsed_lines : Vec<_> =
         lines.iter().map(|line| parse_line(&line)).collect();
 
-    println!("result p1: {}", part1(&parsed_lines));
-    // println!("result p2: {}", part2(&fabric, &claims));
+    let (sleeps, p1_answer) = part1(&parsed_lines);
+
+    println!("result p1: {}", p1_answer);
+    println!("result p2: {}", part2(&sleeps));
 }
