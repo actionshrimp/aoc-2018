@@ -22,7 +22,7 @@ fn run_chain(chain : &str) -> Vec<char> {
 
 #[test]
 fn test_chain() {
-    let res = run_chain("dabAcCaCBAcCcaDA".chars());
+    let res = run_chain("dabAcCaCBAcCcaDA");
     assert_eq!(res.into_iter().collect::<String>(), "dabCBAcaDA");
 }
 
