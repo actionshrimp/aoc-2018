@@ -15,7 +15,7 @@ fn main() {
         lines.iter().map(|line| parse_line(&line)).collect();
 
     println!("result p1: {}", part1(&parsed_lines));
-    // println!("result p2: {}", part2(&sleeps));
+    println!("result p2: {}", part2(&parsed_lines));
 }
 
 fn parse_line(l : &str) -> Coord {
@@ -113,4 +113,19 @@ fn closest(coords: &Vec<Coord>, c0: (i32, i32)) -> Option<&Coord> {
 
 fn distance((x1, y1) : Coord, (x2, y2): Coord) -> i32 {
     (x2 - x1).abs() + (y2 - y1).abs()
+}
+
+fn part2(coords: &Vec<Coord>) -> i32 {
+    let (x0, x1, y0, y1) = grid_corner_coords(coords);
+    let mut count = 0;
+
+    for x in (x0 - 1)..(x1 + 1) {
+        for y in (y0 - 1)..(y1 + 1) {
+            if coords.iter().fold(0, |acc, c| { acc + distance(*c, (x, y)) }) < 10000 {
+                count += 1;
+            }
+        }
+    }
+
+    count
 }
