@@ -2,6 +2,7 @@
 name = "advent-of-code-2018"
 version = "0.1.0"
 authors = ["Dave Aitken <dave.aitken@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 reqwest = "0.9.5"
