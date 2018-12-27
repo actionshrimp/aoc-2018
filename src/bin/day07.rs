@@ -11,6 +11,26 @@ struct Graph {
 }
 
 impl Graph {
+    fn from_pairs (pairs: &Vec<Pair>) -> Graph {
+        let mut g = Graph {
+            available: HashSet::new(),
+            node_requirements: HashMap::new(),
+            node_dependents: HashMap::new()
+        };
+
+        for p in pairs {
+            g.available.insert(p.requirement);
+            g.node_requirements.entry(p.node).or_insert(HashSet::new()).insert(p.requirement);
+            g.node_dependents.entry(p.requirement).or_insert(HashSet::new()).insert(p.node);
+        }
+
+        for (k, _) in &g.node_requirements {
+            g.available.remove(&k);
+        }
+
+        g
+    }
+
     fn consume_first_available(&mut self) -> Option<Node> {
         let e = self.available.iter().min().map(|v| v.clone());
 
@@ -55,26 +75,6 @@ fn test_parse() {
     assert_eq!('M', parsed.node);
 }
 
-fn build_graph (pairs: &Vec<Pair>) -> Graph {
-    let mut g = Graph {
-        available: HashSet::new(),
-        node_requirements: HashMap::new(),
-        node_dependents: HashMap::new()
-    };
-
-    for p in pairs {
-        g.available.insert(p.requirement);
-        g.node_requirements.entry(p.node).or_insert(HashSet::new()).insert(p.requirement);
-        g.node_dependents.entry(p.requirement).or_insert(HashSet::new()).insert(p.node);
-    }
-
-    for (k, _) in &g.node_requirements {
-        g.available.remove(&k);
-    }
-
-    g
-}
-
 fn calc_order(mut g : Graph) -> String {
     let mut s = String::new();
 
@@ -97,13 +97,13 @@ fn test_example() {
              "Step F must be finished before step E can begin."];
 
     let parsed = example_input.iter().map(|p| {parse_line(p)}).collect::<Vec<_>>();
-    let g = build_graph(&parsed);
+    let g = Graph::from_pairs(&parsed);
     assert_eq!("CABDFE", calc_order(g));
 }
 
 fn part1(pairs: &Vec<Pair>) -> String {
 
-    let g = build_graph(pairs);
+    let g = Graph::from_pairs(pairs);
     calc_order(g)
 
 }
