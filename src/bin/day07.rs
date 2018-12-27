@@ -58,17 +58,9 @@ fn calc_order(mut g : Graph) -> String {
         match &g.node_dependents.remove_entry(&earliest) {
             | Some((_, deps)) => {
                 for d in deps {
-                    let mut empty = false;
+                    g.node_requirements.entry(*d).and_modify(|v| { v.remove(&earliest); });
 
-                    g.node_requirements.entry(*d).and_modify(|dep_reqs| {
-                        dep_reqs.remove(&earliest);
-
-                        if dep_reqs.len() == 0 {
-                            empty = true;
-                        }
-                    });
-
-                    if empty {
+                    if g.node_requirements.get(d).expect("reqs for dep").len() == 0 {
                         g.node_requirements.remove(d);
                         g.available.insert(*d);
                     }
