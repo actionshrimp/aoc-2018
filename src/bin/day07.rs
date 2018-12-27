@@ -10,6 +10,34 @@ struct Graph {
     node_dependents: HashMap<Node, HashSet<char>>
 }
 
+impl Graph {
+    fn consume_first_available(&mut self) -> Option<Node> {
+        let e = self.available.iter().min().map(|v| v.clone());
+
+        match e {
+            None => {}
+            Some(earliest) => {
+                self.available.remove(&earliest);
+                match self.node_dependents.remove_entry(&earliest) {
+                    | None => {}
+                    | Some((_, deps)) => {
+                        deps.iter().for_each(|d| {
+                            self.node_requirements.entry(*d).and_modify(|v| { v.remove(&earliest); });
+
+                            if self.node_requirements.get(d).expect("reqs for dep").len() == 0 {
+                                self.node_requirements.remove(d);
+                                self.available.insert(*d);
+                            }
+                        })
+                    }
+                }
+            }
+        }
+
+        e
+    }
+}
+
 struct Pair { node: Node, requirement: Node }
 
 fn parse_line(l: &str) -> Pair {
@@ -50,24 +78,8 @@ fn build_graph (pairs: &Vec<Pair>) -> Graph {
 fn calc_order(mut g : Graph) -> String {
     let mut s = String::new();
 
-    while ! g.available.is_empty() {
-        let earliest : char = *g.available.iter().min().expect("min char");
-        g.available.remove(&earliest);
-        s.push(earliest);
-
-        match &g.node_dependents.remove_entry(&earliest) {
-            | Some((_, deps)) => {
-                for d in deps {
-                    g.node_requirements.entry(*d).and_modify(|v| { v.remove(&earliest); });
-
-                    if g.node_requirements.get(d).expect("reqs for dep").len() == 0 {
-                        g.node_requirements.remove(d);
-                        g.available.insert(*d);
-                    }
-                }
-            }
-            | None => {}
-        }
+    while let Some(c) = g.consume_first_available() {
+        s.push(c);
     }
 
     s
