@@ -105,11 +105,20 @@ mod test {
          "Step D must be finished before step E can begin.",
          "Step F must be finished before step E can begin."];
 
+    fn example_pairs() -> Vec<Pair> {
+        EXAMPLE_LINES.iter().map(|p| {parse_line(p)}).collect::<Vec<_>>()
+    }
+
     #[test]
     fn test_example() {
-        let example_pairs = EXAMPLE_LINES.iter().map(|p| {parse_line(p)}).collect::<Vec<_>>();
-        let g = Graph::from_pairs(&example_pairs);
+        let g = Graph::from_pairs(&example_pairs());
         assert_eq!("CABDFE", calc_order(g));
+    }
+
+    #[test]
+    fn test_example_part_2() {
+        let g = Graph::from_pairs(&example_pairs());
+        assert_eq!(15, calc_duration(g, 2, 0));
     }
 }
 
@@ -119,20 +128,43 @@ fn part1(pairs: &Vec<Pair>) -> String {
     calc_order(g)
 }
 
-// fn calc_duration(mut g: Graph, workers: u8, base_delay: u8) -> u32 {
-//     let workers : Vec<(char, i32)> = Vec::new();
-// }
+fn node_duration(base_delay: usize, c: char) -> usize {
+    base_delay + (c as usize - 64)
+}
 
-// #[test]
-// fn test_example_part_2() {
-//     let g = Graph::from_pairs(&example_pairs);
-//     assert_eq!(15, calc_duration(g, 2, 0));
-// }
+fn calc_duration(mut g: Graph, workers: usize, base_delay: usize) -> usize {
+    let mut t : usize = 0;
+    let mut work_items : Vec<(Node, usize)> = Vec::new();
 
-// fn part2(pairs: &Vec<Pair>) -> u32 {
-//     let g = Graph::from_pairs(pairs);
-//     calc_duration(g, 5, 60)
-// }
+    while g.available.len() > 0 {
+        let mut available_not_assigned : Vec<_> =
+            g.available.iter().filter(|a| { work_items.iter().find(|(w, _)| { &w == a }).is_none() }).collect();
+
+        available_not_assigned.sort();
+        for node in available_not_assigned.iter().take(workers - work_items.len()) {
+            work_items.push((*node.clone(), t as usize));
+        }
+
+        work_items.sort_unstable_by(|(a, s_a), (b, s_b)| {
+            let t_a = node_duration(base_delay, *a) - (t - s_a);
+            let t_b = node_duration(base_delay, *b) - (t - s_b);
+            t_b.cmp(&t_a)
+        });
+
+        let (completed_node, started_at) = work_items.pop().expect("empty queue");
+        let d = node_duration(base_delay, completed_node);
+        t += d - (t - started_at);
+        g.remove(completed_node);
+    }
+
+    t as usize
+}
+
+
+fn part2(pairs: &Vec<Pair>) -> usize {
+    let g = Graph::from_pairs(pairs);
+    calc_duration(g, 5, 60)
+}
 
 fn main() {
     let fname = "data/07.txt";
@@ -145,5 +177,5 @@ fn main() {
         lines.iter().map(|line| parse_line(&line)).collect();
 
     println!("result p1: {}", part1(&parsed_lines));
-    // println!("result p2: {}", part2(&parsed_lines));
+    println!("result p2: {}", part2(&parsed_lines));
 }
